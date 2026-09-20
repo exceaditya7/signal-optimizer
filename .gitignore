@@ -1,0 +1,20 @@
+# Virtual Environments
+venv/
+backend/venv/
+env/
+.venv/
+
+# Python cache & build outputs
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Sample Videos
+data/sample_videos/*.mp4
+data/sample_videos/*.avi
+data/sample_videos/*.mov
