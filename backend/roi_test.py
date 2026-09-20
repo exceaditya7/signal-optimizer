@@ -9,8 +9,8 @@ import numpy as np
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parent
 
-DEFAULT_VIDEO = PROJECT_ROOT / "data" / "sample_videos" / "vd.mp4"
-FALLBACK_VIDEO = PROJECT_ROOT / "data" / "sample_videos" / "road_trafifc.mp4"
+DEFAULT_VIDEO = PROJECT_ROOT / "data" / "sample_videos" / "road_traffic.mp4"
+FALLBACK_VIDEO = PROJECT_ROOT / "data" / "sample_videos" / "vd.mp4"
 DEFAULT_ROI_FILE = PROJECT_ROOT / "data" / "roi_points.npy"
 
 MAX_POINTS = 20
@@ -40,7 +40,7 @@ def select_roi(video_path: str = None, roi_output_path: str = None):
         elif FALLBACK_VIDEO.exists():
             video_path = str(FALLBACK_VIDEO)
         else:
-            print(f"ERROR: Sample video not found at {DEFAULT_VIDEO} or {FALLBACK_VIDEO}")
+            print(f"ERROR: Sample video not found at '{DEFAULT_VIDEO}' or '{FALLBACK_VIDEO}'.")
             return
 
     if roi_output_path is None:

@@ -9,10 +9,10 @@ PROJECT_ROOT = BASE_DIR.parent
 
 MODEL_PATH = BASE_DIR / "yolo11n.pt"
 if not MODEL_PATH.exists():
-    MODEL_PATH = "yolo11n.pt"  # Fallback to YOLO auto-download/lookup
+    MODEL_PATH = "yolo11n.pt"  # Fallback to YOLO auto-download
 
-DEFAULT_VIDEO = PROJECT_ROOT / "data" / "sample_videos" / "vd.mp4"
-FALLBACK_VIDEO = PROJECT_ROOT / "data" / "sample_videos" / "road_trafifc.mp4"
+DEFAULT_VIDEO = PROJECT_ROOT / "data" / "sample_videos" / "road_traffic.mp4"
+FALLBACK_VIDEO = PROJECT_ROOT / "data" / "sample_videos" / "vd.mp4"
 
 # COCO Vehicle Class IDs
 VEHICLE_CLASSES = {
@@ -31,7 +31,7 @@ def run_detector(video_path: str = None):
         elif FALLBACK_VIDEO.exists():
             video_path = str(FALLBACK_VIDEO)
         else:
-            print(f"ERROR: Video file not found at {DEFAULT_VIDEO} or {FALLBACK_VIDEO}")
+            print(f"ERROR: Video file not found at '{DEFAULT_VIDEO}' or '{FALLBACK_VIDEO}'.")
             return
 
     print(f"Loading YOLO model from: {MODEL_PATH}")
@@ -52,7 +52,6 @@ def run_detector(video_path: str = None):
 
         # Run YOLO inference
         results = model(frame, verbose=False)
-
         counts = {name: 0 for name in VEHICLE_CLASSES.values()}
 
         for result in results:

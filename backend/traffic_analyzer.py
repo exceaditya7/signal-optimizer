@@ -10,8 +10,8 @@ BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parent
 
 DEFAULT_MODEL = BASE_DIR / "yolo11n.pt"
-DEFAULT_VIDEO = PROJECT_ROOT / "data" / "sample_videos" / "vd.mp4"
-FALLBACK_VIDEO = PROJECT_ROOT / "data" / "sample_videos" / "road_trafifc.mp4"
+DEFAULT_VIDEO = PROJECT_ROOT / "data" / "sample_videos" / "road_traffic.mp4"
+FALLBACK_VIDEO = PROJECT_ROOT / "data" / "sample_videos" / "vd.mp4"
 DEFAULT_ROI = PROJECT_ROOT / "data" / "roi_points.npy"
 
 # COCO Vehicle Classes
@@ -49,7 +49,7 @@ def analyze_traffic(video_path: str = None, roi_path: str = None, model_path: st
         elif FALLBACK_VIDEO.exists():
             video_path = str(FALLBACK_VIDEO)
         else:
-            print(f"ERROR: Sample video not found at {DEFAULT_VIDEO} or {FALLBACK_VIDEO}")
+            print(f"ERROR: Sample video not found at '{DEFAULT_VIDEO}' or '{FALLBACK_VIDEO}'.")
             return
 
     # Resolve ROI path

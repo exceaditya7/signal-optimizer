@@ -14,7 +14,6 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-# Sample Videos
-data/sample_videos/*.mp4
-data/sample_videos/*.avi
-data/sample_videos/*.mov
+# Large / User Sample Videos (Ignore heavy videos, include default sample video)
+data/sample_videos/*
+!data/sample_videos/road_traffic.mp4
