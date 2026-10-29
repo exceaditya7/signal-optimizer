@@ -1,0 +1,700 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Smart Traffic Optimizer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: masthead, big hero title, then a wide live demo (camera feed + stats panel), then four plain sections: pipeline, files, run, ideas. */
+:root{
+  --ground:#E7EBEE; --surface:#F6F8F9; --ink:#10171C; --muted:#54626C; --line:#C6CFD6;
+  --accent:#2446E8; --on-accent:#FFFFFF;
+  --go:#167A42; --warn:#8A5F00; --stop:#B42A2A;
+  --feed:#0B1115; --code-bg:#0E1418; --code-ink:#D9E3EA;
+  --display:'Barlow Condensed','Arial Narrow',Impact,sans-serif;
+  --body:'Barlow',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0C1215; --surface:#141C21; --ink:#E5ECF0; --muted:#90A1AC; --line:#25323B;
+    --accent:#7C95FF; --on-accent:#0C1215;
+    --go:#3CCB7F; --warn:#E5B232; --stop:#FF7A7A;
+    --feed:#080D10; --code-bg:#080D10; --code-ink:#D9E3EA;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0C1215; --surface:#141C21; --ink:#E5ECF0; --muted:#90A1AC; --line:#25323B;
+  --accent:#7C95FF; --on-accent:#0C1215;
+  --go:#3CCB7F; --warn:#E5B232; --stop:#FF7A7A;
+  --feed:#080D10; --code-bg:#080D10; --code-ink:#D9E3EA;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font:400 16px/1.6 var(--body);
+  padding-block:20px 72px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+a{color:inherit}
+code,kbd{font-family:var(--mono)}
+.wrap{max-width:1120px;margin-inline:auto;display:grid;gap:72px}
+.wrap>*{min-width:0}
+
+/* masthead */
+.mast{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.brand{font:500 .8125rem var(--mono);color:var(--muted);text-decoration:none;letter-spacing:.02em}
+.mast nav{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center}
+.mast nav a:not(.btn){font-weight:500;font-size:.9375rem;text-decoration:none;color:var(--muted)}
+.mast nav a:not(.btn):hover{color:var(--ink)}
+
+/* buttons */
+.btn{
+  font:500 .875rem/1.2 var(--body);padding:.55rem .9rem;border:1px solid var(--line);
+  background:var(--surface);color:var(--ink);border-radius:6px;cursor:pointer;text-decoration:none;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.btn:hover:not([disabled]){border-color:var(--ink)}
+.btn:focus-visible,#feed:focus-visible,input[type=range]:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.btn kbd{font-size:.7rem;padding:0 5px;border:1px solid currentColor;border-radius:3px;opacity:.7}
+
+/* hero */
+.hero{display:grid;gap:22px}
+h1{font:700 clamp(2.9rem,9vw,6.2rem)/.92 var(--display);text-transform:uppercase;letter-spacing:.01em;margin:0;text-wrap:balance}
+.lede{font-size:1.1875rem;max-width:62ch;margin:0;color:var(--muted)}
+.lede strong{color:var(--ink);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.chips li{font:500 .8125rem var(--mono);border:2px solid var(--ink);border-radius:6px;padding:2px 10px}
+.hero .cta{display:flex;flex-wrap:wrap;gap:10px}
+
+h2{font:700 clamp(1.9rem,4.5vw,2.75rem)/1 var(--display);text-transform:uppercase;margin:0 0 20px;text-wrap:balance}
+h3{font:700 1.45rem/1.1 var(--display);text-transform:uppercase;margin:0}
+p{margin:0}
+
+/* demo */
+.demo{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+@media (max-width:880px){.demo{grid-template-columns:minmax(0,1fr)}}
+.stage{display:grid;gap:12px;min-width:0}
+.screen{background:var(--feed);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+#feed{display:block;width:100%;height:auto;aspect-ratio:16/9;touch-action:manipulation}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px}
+.toolbar .spacer{flex:1}
+#status{font-size:.9375rem;color:var(--muted);min-height:3.2em}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;display:grid;gap:20px;align-content:start;min-width:0}
+.lab{font:500 .75rem var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.big{font:700 4rem/1 var(--display);font-variant-numeric:tabular-nums}
+.mid{font:700 2rem/1.1 var(--display);font-variant-numeric:tabular-nums}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.level{display:grid;gap:10px}
+.pill{display:inline-flex;align-items:center;gap:7px;justify-self:start;font:600 .8125rem var(--mono);padding:2px 11px;border:1px solid currentColor;border-radius:999px}
+.pill::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.pill.go{color:var(--go)} .pill.warn{color:var(--warn)} .pill.stop{color:var(--stop)}
+.meter{position:relative;display:flex;gap:2px;height:10px;margin-top:6px}
+.seg{height:100%}
+.seg.go{flex:7;background:var(--go);border-radius:5px 0 0 5px}
+.seg.warn{flex:9;background:var(--warn)}
+.seg.stop{flex:14;background:var(--stop);border-radius:0 5px 5px 0}
+#mark{position:absolute;top:-5px;left:0;width:3px;height:20px;background:var(--ink);border-radius:2px;transform:translateX(-50%);transition:left .3s}
+.scale{display:flex;justify-content:space-between;font:400 .6875rem var(--mono);color:var(--muted)}
+.classes{display:grid;gap:6px;margin:0}
+.classes div{display:flex;align-items:center;gap:10px;font-size:.9375rem}
+.classes dt{display:flex;align-items:center;gap:10px;flex:1}
+.classes dd{margin:0;font:500 .9375rem var(--mono);font-variant-numeric:tabular-nums}
+.sw{width:10px;height:10px;border-radius:2px;display:inline-block}
+.vol label{display:flex;justify-content:space-between;margin-bottom:6px;font-size:.9375rem;font-weight:500}
+.vol output{font-family:var(--mono)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.note{font-size:.875rem;color:var(--muted);max-width:75ch}
+
+/* pipeline */
+.steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:22px;margin:0;padding:0;list-style:none}
+@media (max-width:900px){.steps{grid-template-columns:minmax(0,1fr)}}
+.step{border-top:3px solid var(--ink);padding-top:12px;display:grid;gap:8px;align-content:start}
+.step .n{font:500 .75rem var(--mono);color:var(--muted)}
+.step code{font-size:.8125rem;color:var(--muted);overflow-wrap:anywhere}
+.step p{font-size:.9375rem}
+
+/* files */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:680px}
+th,td{padding:13px 16px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top;font-size:.9375rem}
+tr:last-child td{border-bottom:0}
+th{font:500 .75rem var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+td code{font-size:.8125rem;overflow-wrap:anywhere}
+td:first-child code{font-weight:500}
+
+/* run */
+.run{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px 40px}
+@media (max-width:900px){.run{grid-template-columns:minmax(0,1fr)}}
+.cmd{display:grid;gap:10px;align-content:start}
+.cmd p{font-size:.9375rem;color:var(--muted)}
+.codewrap{position:relative}
+pre{margin:0;background:var(--code-bg);color:var(--code-ink);border-radius:8px;padding:14px 16px;padding-right:84px;font:400 .84375rem/1.75 var(--mono);overflow-x:auto}
+.copy{position:absolute;top:8px;right:8px;font:500 .75rem var(--mono);padding:4px 9px;border-radius:5px;border:1px solid #3A4852;background:#1A242B;color:#D9E3EA;cursor:pointer}
+.copy:hover{border-color:#8FA0AB}
+.copy:focus-visible{outline:2px solid #7C95FF;outline-offset:2px}
+.keys{display:flex;flex-wrap:wrap;gap:8px 14px;margin:0;padding:0;list-style:none;font-size:.875rem;color:var(--muted)}
+.keys kbd{color:var(--ink);border:1px solid var(--line);background:var(--surface);border-radius:4px;padding:1px 7px;font-size:.8125rem}
+.flag{border:1px solid var(--line);border-left:4px solid var(--warn);background:var(--surface);border-radius:6px;padding:12px 16px;font-size:.9375rem}
+
+/* ideas */
+.ideas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 40px;margin:0;padding:0;list-style:none}
+@media (max-width:760px){.ideas{grid-template-columns:minmax(0,1fr)}}
+.ideas li{border-top:1px solid var(--line);padding-top:14px;display:grid;gap:6px}
+.ideas p{color:var(--muted);font-size:.9375rem}
+
+footer{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between;border-top:1px solid var(--line);padding-top:18px;font-size:.875rem;color:var(--muted)}
+
+@media (prefers-reduced-motion:reduce){#mark{transition:none}}
+</style>
+
+<div class="wrap" id="top">
+  <header class="mast">
+    <a class="brand" href="#top">exceaditya7 / signal-optimizer</a>
+    <nav aria-label="Page sections">
+      <a href="#demo">Demo</a>
+      <a href="#pipeline">Pipeline</a>
+      <a href="#files">Files</a>
+      <a href="#run">Run it</a>
+      <a class="btn primary" href="https://github.com/exceaditya7/signal-optimizer" target="_blank" rel="noopener">View on GitHub</a>
+    </nav>
+  </header>
+
+  <section class="hero" aria-labelledby="title">
+    <h1 id="title">Smart Traffic Optimizer</h1>
+    <p class="lede">Point it at traffic video, draw a region on the road, and get live vehicle counts, tracked IDs and density for that region. <strong>YOLOv11 detects</strong> cars, motorcycles, buses and trucks, and <strong>ByteTrack follows</strong> each one.</p>
+    <ul class="chips" aria-label="Stack">
+      <li>YOLOv11</li><li>ByteTrack</li><li>Python</li><li>MIT license</li>
+    </ul>
+  </section>
+
+  <section id="demo" aria-labelledby="demo-h">
+    <h2 id="demo-h">Draw a region, watch the count</h2>
+    <div class="demo">
+      <div class="stage">
+        <div class="screen">
+          <canvas id="feed" tabindex="0" aria-label="Simulated overhead traffic camera. Vehicles are tracked with boxes and IDs inside a highlighted region of interest."></canvas>
+        </div>
+        <div class="toolbar" role="toolbar" aria-label="ROI tools">
+          <button class="btn primary" id="btnDraw" type="button">Draw ROI</button>
+          <button class="btn" id="btnUndo" type="button" disabled>Undo <kbd>U</kbd></button>
+          <button class="btn" id="btnReset" type="button" disabled>Reset <kbd>R</kbd></button>
+          <button class="btn" id="btnSave" type="button" disabled>Save <kbd>S</kbd></button>
+          <span class="spacer"></span>
+          <button class="btn" id="btnSample" type="button">Sample ROI</button>
+          <button class="btn" id="btnPlay" type="button">Pause</button>
+        </div>
+        <p id="status" role="status">Press Draw ROI, then click on the feed to place the corners of your own region.</p>
+      </div>
+
+      <aside class="panel" aria-label="Region statistics">
+        <div>
+          <p class="lab">Vehicles in region now</p>
+          <p class="big" id="nIn">0</p>
+        </div>
+        <div class="two">
+          <div><p class="lab">Unique IDs entered</p><p class="mid" id="nEntered">0</p></div>
+          <div><p class="lab">Occupancy</p><p class="mid" id="occ">0%</p></div>
+        </div>
+        <div class="level">
+          <span class="pill go" id="lvl">Free flow</span>
+          <div>
+            <div class="meter" aria-hidden="true"><span class="seg go"></span><span class="seg warn"></span><span class="seg stop"></span><i id="mark"></i></div>
+            <div class="scale" aria-hidden="true"><span>0%</span><span>30%+</span></div>
+          </div>
+        </div>
+        <dl class="classes">
+          <div><dt><span class="sw" style="background:#7C9BFF"></span>Car</dt><dd id="c-car">0</dd></div>
+          <div><dt><span class="sw" style="background:#FFB454"></span>Motorcycle</dt><dd id="c-motorcycle">0</dd></div>
+          <div><dt><span class="sw" style="background:#C9A2FF"></span>Bus</dt><dd id="c-bus">0</dd></div>
+          <div><dt><span class="sw" style="background:#4FDDA6"></span>Truck</dt><dd id="c-truck">0</dd></div>
+        </dl>
+        <div class="vol">
+          <label for="vol">Traffic volume <output id="volOut" for="vol">40%</output></label>
+          <input id="vol" type="range" min="0" max="100" value="40">
+        </div>
+      </aside>
+    </div>
+    <p class="note" style="margin-top:14px">This is a simulated scene running in your browser. It reproduces what the project's scripts overlay on real video (boxes, IDs, a polygon region, live counts) and does not run YOLO. Occupancy is the share of the region covered by vehicles; the free, busy and heavy thresholds are illustrative.</p>
+  </section>
+
+  <section id="pipeline" aria-labelledby="pipe-h">
+    <h2 id="pipe-h">How a frame becomes a count</h2>
+    <ol class="steps">
+      <li class="step">
+        <span class="n">1</span><h3>Read video</h3>
+        <code>data/sample_videos/</code>
+        <p>Frames come from the sample videos in the repository.</p>
+      </li>
+      <li class="step">
+        <span class="n">2</span><h3>Detect</h3>
+        <code>backend/yolo11n.pt</code>
+        <p>The YOLO11 nano weights find cars, motorcycles, buses and trucks in each frame.</p>
+      </li>
+      <li class="step">
+        <span class="n">3</span><h3>Track</h3>
+        <code>ByteTrack</code>
+        <p>Each detection keeps a unique vehicle ID from frame to frame, so one car is counted once.</p>
+      </li>
+      <li class="step">
+        <span class="n">4</span><h3>Check region</h3>
+        <code>data/roi_points.npy</code>
+        <p>Vehicles crossing or staying inside the saved ROI polygon are the ones that count.</p>
+      </li>
+      <li class="step">
+        <span class="n">5</span><h3>Overlay</h3>
+        <code>traffic_analyzer.py</code>
+        <p>Counts, density and tracking markers are drawn on the video in real time.</p>
+      </li>
+    </ol>
+  </section>
+
+  <section id="files" aria-labelledby="files-h">
+    <h2 id="files-h">What is in the repo</h2>
+    <div class="tbl">
+      <table>
+        <thead><tr><th scope="col">File</th><th scope="col">Role</th><th scope="col">Command</th></tr></thead>
+        <tbody>
+          <tr><td><code>backend/detector.py</code></td><td>Basic vehicle detection on the full frame, with no ROI filtering.</td><td><code>python backend/detector.py</code></td></tr>
+          <tr><td><code>backend/roi_test.py</code></td><td>Interactive tool for drawing and saving the ROI polygon on a video frame.</td><td><code>python backend/roi_test.py</code></td></tr>
+          <tr><td><code>backend/traffic_analyzer.py</code></td><td>Full analysis: detection, ByteTrack tracking and counting inside the ROI, with a live overlay.</td><td><code>python backend/traffic_analyzer.py</code></td></tr>
+          <tr><td><code>backend/yolo11n.pt</code></td><td>Pre-trained YOLO11 nano weights.</td><td>&mdash;</td></tr>
+          <tr><td><code>data/roi_points.npy</code></td><td>The saved ROI polygon coordinates.</td><td>Written when you press <code>S</code> in the ROI tool</td></tr>
+          <tr><td><code>data/sample_videos/</code></td><td>Input sample videos.</td><td>&mdash;</td></tr>
+          <tr><td><code>requirements.txt</code></td><td>Python dependencies.</td><td><code>pip install -r requirements.txt</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="run" aria-labelledby="run-h">
+    <h2 id="run-h">Run it</h2>
+    <div class="run">
+      <div class="cmd">
+        <h3>1. Install</h3>
+        <div class="codewrap">
+          <pre id="cmd1">git clone https://github.com/exceaditya7/signal-optimizer.git
+cd signal-optimizer
+python3 -m venv backend/venv
+source backend/venv/bin/activate
+pip install -r requirements.txt</pre>
+          <button class="copy" type="button" data-copy="cmd1">Copy</button>
+        </div>
+        <div class="flag">The README says <code>cd smart-traffic-optimizer</code>, but the cloned folder is named <code>signal-optimizer</code>.</div>
+      </div>
+      <div class="cmd">
+        <h3>2. Draw your region</h3>
+        <div class="codewrap">
+          <pre id="cmd2">python backend/roi_test.py</pre>
+          <button class="copy" type="button" data-copy="cmd2">Copy</button>
+        </div>
+        <ul class="keys" aria-label="ROI tool controls">
+          <li><kbd>Left click</kbd> add point (min 3)</li>
+          <li><kbd>U</kbd> undo</li>
+          <li><kbd>R</kbd> reset</li>
+          <li><kbd>S</kbd> save</li>
+          <li><kbd>Q</kbd> quit</li>
+        </ul>
+      </div>
+      <div class="cmd">
+        <h3>3. Run the analyzer</h3>
+        <div class="codewrap">
+          <pre id="cmd3">python backend/traffic_analyzer.py</pre>
+          <button class="copy" type="button" data-copy="cmd3">Copy</button>
+        </div>
+        <p>Tracks vehicles and counts those inside your saved region, with the overlay drawn live.</p>
+      </div>
+      <div class="cmd">
+        <h3>Or skip the region</h3>
+        <div class="codewrap">
+          <pre id="cmd4">python backend/detector.py</pre>
+          <button class="copy" type="button" data-copy="cmd4">Copy</button>
+        </div>
+        <p>Runs plain full-frame detection with no ROI filtering.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="ideas-h">
+    <h2 id="ideas-h">Ideas for what comes next</h2>
+    <ul class="ideas">
+      <li><h3>Adaptive signal timing</h3><p>Turn per-approach occupancy into suggested green times. This would match the project's name; the repository counts and measures today and does not control signals.</p></li>
+      <li><h3>Count export</h3><p>Log per-class counts per minute to a CSV file for later analysis.</p></li>
+      <li><h3>Multiple regions</h3><p>One polygon per lane or approach, each with its own counts and occupancy.</p></li>
+      <li><h3>Live camera input</h3><p>Read from a webcam or network stream in addition to the sample videos.</p></li>
+    </ul>
+    <p class="note" style="margin-top:18px">These are suggestions, not features of the repository.</p>
+  </section>
+
+  <footer>
+    <span>MIT License</span>
+    <a href="https://github.com/exceaditya7/signal-optimizer" target="_blank" rel="noopener">github.com/exceaditya7/signal-optimizer</a>
+  </footer>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var W=960,H=540;
+  var cv=document.getElementById('feed'),ctx=cv.getContext('2d');
+  var dpr=Math.min(window.devicePixelRatio||1,2);
+  cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
+  var MONO='"IBM Plex Mono",ui-monospace,Menlo,monospace';
+
+  var CL={
+    car:{len:48,wid:24,color:'#7C9BFF',vmin:2.3,vmax:3.1,w:0.58},
+    motorcycle:{len:24,wid:11,color:'#FFB454',vmin:2.9,vmax:3.7,w:0.14},
+    bus:{len:96,wid:30,color:'#C9A2FF',vmin:1.7,vmax:2.2,w:0.10},
+    truck:{len:74,wid:28,color:'#4FDDA6',vmin:1.9,vmax:2.6,w:0.18}
+  };
+  var KEYS=['car','motorcycle','bus','truck'];
+  var BODY=['#D8DEE3','#98A4AE','#5E6B75','#B24A4A','#3B5B8C','#C9B458','#EDEDED','#2F3A42'];
+  var LANES=[{y:165,dir:1},{y:240,dir:1},{y:315,dir:-1},{y:390,dir:-1}];
+  var ROAD_TOP=128,ROAD_BOT=428;
+  var SAMPLE=[[300,132],[640,132],[690,424],[250,424]];
+
+  function copyPts(a){return a.map(function(p){return [p[0],p[1]];});}
+  function loadRoi(){
+    try{
+      var raw=localStorage.getItem('sto-roi'); if(!raw) return null;
+      var a=JSON.parse(raw);
+      if(!Array.isArray(a)||a.length<3||a.length>24) return null;
+      for(var i=0;i<a.length;i++){
+        var p=a[i];
+        if(!Array.isArray(p)||p.length!==2||!isFinite(p[0])||!isFinite(p[1])||p[0]<0||p[0]>W||p[1]<0||p[1]>H) return null;
+      }
+      return a;
+    }catch(e){return null;}
+  }
+
+  var roi=loadRoi()||copyPts(SAMPLE);
+  var draft=[],editing=false,mouse=null;
+  var vehicles=[],nextId=1,entered=0,tNow=0,nextSpawn=[0,0.4,0.8,1.2];
+  var vol=0.4;
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var paused=!!reduce;
+
+  var $=function(id){return document.getElementById(id);};
+  var btnDraw=$('btnDraw'),btnUndo=$('btnUndo'),btnReset=$('btnReset'),btnSave=$('btnSave'),btnSample=$('btnSample'),btnPlay=$('btnPlay');
+  var statusEl=$('status');
+
+  function pick(){
+    var r=Math.random(),acc=0;
+    for(var i=0;i<KEYS.length;i++){acc+=CL[KEYS[i]].w;if(r<acc)return KEYS[i];}
+    return 'car';
+  }
+  function trySpawn(i){
+    var L=LANES[i],k=pick(),c=CL[k];
+    var x0=L.dir>0?-c.len/2-6:W+c.len/2+6;
+    for(var j=0;j<vehicles.length;j++){
+      var v=vehicles[j];
+      if(v.lane===i&&Math.abs(v.x-x0)<(v.len+c.len)/2+70) return false;
+    }
+    var vd=c.vmin+Math.random()*(c.vmax-c.vmin);
+    vehicles.push({
+      id:nextId++,k:k,len:c.len,wid:c.wid,x:x0,y:L.y+(Math.random()-0.5)*10,
+      lane:i,dir:L.dir,vd:vd,v:vd,conf:0.55+Math.random()*0.42,
+      body:BODY[Math.floor(Math.random()*BODY.length)],
+      counted:false,inside:false,trail:[],tick:0,lead:null
+    });
+    return true;
+  }
+
+  function inPoly(x,y,pts){
+    var inside=false;
+    for(var i=0,j=pts.length-1;i<pts.length;j=i++){
+      var xi=pts[i][0],yi=pts[i][1],xj=pts[j][0],yj=pts[j][1];
+      if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi)) inside=!inside;
+    }
+    return inside;
+  }
+  function polyArea(pts){
+    var a=0;
+    for(var i=0,j=pts.length-1;i<pts.length;j=i++) a+=(pts[j][0]*pts[i][1])-(pts[i][0]*pts[j][1]);
+    return Math.abs(a)/2;
+  }
+
+  function step(dt){
+    tNow+=dt;
+    var lam=0.12+vol*1.3;
+    for(var i=0;i<LANES.length;i++){
+      if(tNow>=nextSpawn[i]){
+        nextSpawn[i]=trySpawn(i)?tNow+(-Math.log(1-Math.random()))/lam:tNow+0.25;
+      }
+    }
+    var n=vehicles.length,a,b;
+    for(a=0;a<n;a++){
+      var v=vehicles[a],lead=null,best=1e9;
+      for(b=0;b<n;b++){
+        if(a===b) continue;
+        var o=vehicles[b];
+        if(o.lane!==v.lane) continue;
+        var d=(o.x-v.x)*v.dir;
+        if(d>0&&d<best){best=d;lead=o;}
+      }
+      var target=v.vd;
+      if(lead){
+        var gap=best-(lead.len+v.len)/2;
+        if(gap<14) target=0;
+        else if(gap<90) target=Math.min(target,lead.v+(gap-14)*0.03);
+      }
+      v.lead=lead;
+      v.v+=(target-v.v)*Math.min(1,dt*5);
+    }
+    for(a=0;a<n;a++){
+      var w=vehicles[a];
+      w.x+=w.dir*w.v*48*dt;
+      if(w.lead){
+        var minGap=(w.lead.len+w.len)/2+4;
+        if((w.lead.x-w.x)*w.dir<minGap) w.x=w.lead.x-w.dir*minGap;
+      }
+      w.tick++;
+      if(w.tick%3===0){w.trail.push([w.x,w.y]);if(w.trail.length>14)w.trail.shift();}
+      w.inside=inPoly(w.x,w.y,roi);
+      if(w.inside&&!w.counted){w.counted=true;entered++;}
+    }
+    vehicles=vehicles.filter(function(v){return v.x>-140&&v.x<W+140;});
+  }
+
+  function rr(x,y,w,h,r){
+    r=Math.min(r,w/2,h/2);
+    ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);
+    ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);
+    ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();
+  }
+  function polyPath(pts){
+    ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);
+    for(var i=1;i<pts.length;i++) ctx.lineTo(pts[i][0],pts[i][1]);
+    ctx.closePath();
+  }
+
+  function drawRoad(){
+    ctx.fillStyle='#0B1115';ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#0F171C';ctx.fillRect(0,0,W,ROAD_TOP);ctx.fillRect(0,ROAD_BOT,W,H-ROAD_BOT);
+    ctx.fillStyle='#182128';ctx.fillRect(0,ROAD_TOP,W,ROAD_BOT-ROAD_TOP);
+    ctx.lineWidth=2;ctx.strokeStyle='rgba(255,255,255,.38)';ctx.setLineDash([]);
+    ctx.beginPath();ctx.moveTo(0,ROAD_TOP+6);ctx.lineTo(W,ROAD_TOP+6);ctx.moveTo(0,ROAD_BOT-6);ctx.lineTo(W,ROAD_BOT-6);ctx.stroke();
+    ctx.setLineDash([18,16]);ctx.strokeStyle='rgba(255,255,255,.3)';
+    ctx.beginPath();ctx.moveTo(0,203);ctx.lineTo(W,203);ctx.moveTo(0,353);ctx.lineTo(W,353);ctx.stroke();
+    ctx.setLineDash([]);ctx.strokeStyle='rgba(214,180,60,.7)';
+    ctx.beginPath();ctx.moveTo(0,275);ctx.lineTo(W,275);ctx.moveTo(0,281);ctx.lineTo(W,281);ctx.stroke();
+  }
+
+  function drawVehicle(v){
+    var L=v.len,Wd=v.wid;
+    ctx.save();ctx.translate(v.x,v.y);ctx.scale(v.dir,1);
+    ctx.fillStyle='rgba(0,0,0,.28)';rr(-L/2+2,-Wd/2+3,L,Wd,6);ctx.fill();
+    if(v.k==='car'){
+      ctx.fillStyle=v.body;rr(-L/2,-Wd/2,L,Wd,7);ctx.fill();
+      ctx.fillStyle='rgba(8,14,18,.72)';
+      ctx.fillRect(L*0.12,-Wd/2+3.5,L*0.14,Wd-7);
+      ctx.fillRect(-L*0.36,-Wd/2+4,L*0.1,Wd-8);
+      ctx.fillStyle='rgba(255,255,255,.18)';ctx.fillRect(-L*0.2,-Wd/2+3.5,L*0.3,Wd-7);
+    }else if(v.k==='motorcycle'){
+      ctx.fillStyle='#2B343B';rr(-L/2,-3,L,6,3);ctx.fill();
+      ctx.fillRect(L*0.28,-Wd/2,3,Wd);
+      ctx.fillStyle=v.body;ctx.beginPath();ctx.arc(-1,0,5,0,6.2832);ctx.fill();
+      ctx.fillStyle='#10171C';ctx.beginPath();ctx.arc(L*0.1,0,2.6,0,6.2832);ctx.fill();
+    }else if(v.k==='bus'){
+      ctx.fillStyle='#DDE3E8';rr(-L/2,-Wd/2,L,Wd,6);ctx.fill();
+      ctx.fillStyle='rgba(8,14,18,.7)';
+      for(var i=0;i<6;i++) ctx.fillRect(-L/2+8+i*12,-Wd/2+4,8,Wd-8);
+      ctx.fillRect(L/2-9,-Wd/2+3,6,Wd-6);
+    }else{
+      ctx.fillStyle='#C9D1D7';rr(-L/2,-Wd/2+1,L*0.68,Wd-2,3);ctx.fill();
+      ctx.fillStyle='rgba(0,0,0,.18)';ctx.fillRect(-L/2+4,-1,L*0.68-8,2);
+      ctx.fillStyle=v.body;rr(L/2-L*0.3,-Wd/2+2,L*0.3,Wd-4,4);ctx.fill();
+      ctx.fillStyle='rgba(8,14,18,.72)';ctx.fillRect(L/2-6,-Wd/2+5,3,Wd-10);
+    }
+    ctx.restore();
+  }
+
+  function draw(){
+    drawRoad();
+    // region fill sits under the vehicles
+    ctx.setLineDash([]);
+    ctx.globalAlpha=editing?0.35:1;
+    polyPath(roi);ctx.fillStyle='rgba(124,155,255,.14)';ctx.fill();
+    ctx.globalAlpha=1;
+
+    var i,v;
+    for(i=0;i<vehicles.length;i++) drawVehicle(vehicles[i]);
+
+    for(i=0;i<vehicles.length;i++){
+      v=vehicles[i];
+      var c=CL[v.k].color;
+      if(v.inside&&v.trail.length>1){
+        ctx.globalAlpha=0.55;ctx.strokeStyle=c;ctx.lineWidth=2;ctx.beginPath();
+        ctx.moveTo(v.trail[0][0],v.trail[0][1]);
+        for(var t=1;t<v.trail.length;t++) ctx.lineTo(v.trail[t][0],v.trail[t][1]);
+        ctx.stroke();ctx.globalAlpha=1;
+      }
+      var bx=v.x-v.len/2-4,by=v.y-v.wid/2-4,bw=v.len+8,bh=v.wid+8;
+      ctx.globalAlpha=v.inside?1:0.35;
+      ctx.strokeStyle=c;ctx.lineWidth=v.inside?2:1;ctx.strokeRect(bx,by,bw,bh);
+      if(v.inside){
+        ctx.fillStyle=c;ctx.beginPath();ctx.arc(v.x,v.y,3,0,6.2832);ctx.fill();
+        var conf=Math.min(0.99,Math.max(0.5,v.conf+Math.sin(tNow*3+v.id)*0.015));
+        var label=v.k+' #'+v.id+' '+conf.toFixed(2);
+        ctx.font='500 13px '+MONO;
+        var tw=ctx.measureText(label).width+10,ly=by-18<2?by+bh:by-18;
+        ctx.fillStyle=c;ctx.fillRect(bx,ly,tw,18);
+        ctx.fillStyle='#0B1115';ctx.textBaseline='middle';ctx.fillText(label,bx+5,ly+9);
+      }
+      ctx.globalAlpha=1;
+    }
+
+    // region outline
+    ctx.globalAlpha=editing?0.35:1;
+    polyPath(roi);ctx.strokeStyle='#9DB3FF';ctx.lineWidth=2;ctx.setLineDash([]);ctx.stroke();
+    if(!editing){
+      ctx.fillStyle='#9DB3FF';
+      for(i=0;i<roi.length;i++){ctx.beginPath();ctx.arc(roi[i][0],roi[i][1],4,0,6.2832);ctx.fill();}
+    }
+    ctx.globalAlpha=1;
+
+    if(editing&&draft.length){
+      ctx.strokeStyle='#FFD166';ctx.lineWidth=2;ctx.setLineDash([8,6]);
+      ctx.beginPath();ctx.moveTo(draft[0][0],draft[0][1]);
+      for(i=1;i<draft.length;i++) ctx.lineTo(draft[i][0],draft[i][1]);
+      if(mouse) ctx.lineTo(mouse[0],mouse[1]);
+      ctx.stroke();ctx.setLineDash([]);
+      ctx.font='500 13px '+MONO;ctx.textBaseline='middle';
+      for(i=0;i<draft.length;i++){
+        ctx.fillStyle='#FFD166';ctx.beginPath();ctx.arc(draft[i][0],draft[i][1],6,0,6.2832);ctx.fill();
+        ctx.fillStyle='#0B1115';ctx.textAlign='center';ctx.fillText(String(i+1),draft[i][0],draft[i][1]+0.5);
+      }
+      ctx.textAlign='left';
+    }
+
+    // camera tag
+    ctx.fillStyle='#FFB454';ctx.beginPath();ctx.arc(24,26,4,0,6.2832);ctx.fill();
+    ctx.fillStyle='rgba(218,228,235,.8)';ctx.font='500 14px '+MONO;ctx.textBaseline='middle';
+    ctx.fillText('CAM 01 · SIMULATED FEED',36,26);
+  }
+
+  // stats panel
+  var elIn=$('nIn'),elEnt=$('nEntered'),elOcc=$('occ'),elLvl=$('lvl'),elMark=$('mark');
+  function updateStats(){
+    var counts={car:0,motorcycle:0,bus:0,truck:0},n=0,area=0;
+    for(var i=0;i<vehicles.length;i++){
+      var v=vehicles[i];
+      if(v.inside){n++;counts[v.k]++;area+=v.len*v.wid;}
+    }
+    var occ=Math.min(1,area/polyArea(roi));
+    elIn.textContent=n;elEnt.textContent=entered;
+    elOcc.textContent=Math.round(occ*100)+'%';
+    var cls=occ<0.07?'go':(occ<0.16?'warn':'stop');
+    elLvl.className='pill '+cls;
+    elLvl.textContent=cls==='go'?'Free flow':(cls==='warn'?'Busy':'Heavy');
+    elMark.style.left=(Math.min(occ/0.30,1)*100)+'%';
+    for(var k=0;k<KEYS.length;k++) $('c-'+KEYS[k]).textContent=counts[KEYS[k]];
+  }
+
+  function setStatus(t){statusEl.textContent=t;}
+  function refreshButtons(){
+    btnDraw.textContent=editing?'Cancel':'Draw ROI';
+    btnDraw.className=editing?'btn':'btn primary';
+    btnUndo.disabled=!(editing&&draft.length>0);
+    btnReset.disabled=!(editing&&draft.length>0);
+    btnSave.disabled=!(editing&&draft.length>=3);
+    btnPlay.textContent=paused?'Play':'Pause';
+    cv.style.cursor=editing?'crosshair':'default';
+  }
+  function restartCounts(){
+    entered=0;
+    for(var i=0;i<vehicles.length;i++){vehicles[i].counted=false;vehicles[i].inside=inPoly(vehicles[i].x,vehicles[i].y,roi);if(vehicles[i].inside){vehicles[i].counted=true;entered++;}}
+    updateStats();
+  }
+  function startEdit(){
+    editing=true;draft=[];refreshButtons();cv.focus();
+    setStatus('Click on the feed to place polygon points, at least 3. U undoes the last point, R clears them, S saves, Esc cancels.');
+  }
+  function cancelEdit(msg){
+    editing=false;draft=[];refreshButtons();
+    setStatus(msg||'ROI edit cancelled. The previous region is still active.');
+  }
+  function undo(){draft.pop();refreshButtons();}
+  function reset(){draft=[];refreshButtons();setStatus('Points cleared. Click on the feed to start again.');}
+  function save(){
+    if(draft.length<3){setStatus('Add at least 3 points before saving.');return;}
+    roi=copyPts(draft);editing=false;draft=[];
+    try{localStorage.setItem('sto-roi',JSON.stringify(roi));}catch(e){}
+    restartCounts();refreshButtons();
+    setStatus('ROI saved with '+roi.length+' points. The counters restarted for the new region.');
+  }
+  function sample(){
+    roi=copyPts(SAMPLE);editing=false;draft=[];
+    try{localStorage.removeItem('sto-roi');}catch(e){}
+    restartCounts();refreshButtons();
+    setStatus('Sample ROI restored.');
+  }
+
+  btnDraw.addEventListener('click',function(){editing?cancelEdit():startEdit();});
+  btnUndo.addEventListener('click',undo);
+  btnReset.addEventListener('click',reset);
+  btnSave.addEventListener('click',save);
+  btnSample.addEventListener('click',sample);
+  btnPlay.addEventListener('click',function(){paused=!paused;refreshButtons();});
+  $('vol').addEventListener('input',function(e){vol=e.target.value/100;$('volOut').textContent=e.target.value+'%';});
+
+  function toLocal(e){
+    var r=cv.getBoundingClientRect();
+    return [(e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height];
+  }
+  cv.addEventListener('pointerdown',function(e){
+    if(!editing) return;
+    var p=toLocal(e);
+    draft.push([Math.round(p[0]),Math.round(p[1])]);
+    refreshButtons();cv.focus();
+  });
+  cv.addEventListener('pointermove',function(e){mouse=toLocal(e);});
+  cv.addEventListener('pointerleave',function(){mouse=null;});
+  cv.addEventListener('keydown',function(e){
+    if(!editing) return;
+    var k=e.key.toLowerCase();
+    if(k==='u'){undo();e.preventDefault();}
+    else if(k==='r'){reset();e.preventDefault();}
+    else if(k==='s'){save();e.preventDefault();}
+    else if(k==='q'||k==='escape'){cancelEdit();e.preventDefault();}
+  });
+
+  // copy buttons
+  var copies=document.querySelectorAll('[data-copy]');
+  Array.prototype.forEach.call(copies,function(b){
+    b.addEventListener('click',function(){
+      var el=document.getElementById(b.getAttribute('data-copy'));
+      var txt=el.innerText.trim();
+      function done(label){b.textContent=label;setTimeout(function(){b.textContent='Copy';},1600);}
+      function fallback(){
+        try{
+          var r=document.createRange();r.selectNodeContents(el);
+          var s=window.getSelection();s.removeAllRanges();s.addRange(r);
+        }catch(e){}
+        done('Selected');
+      }
+      try{
+        navigator.clipboard.writeText(txt).then(function(){done('Copied');},fallback);
+      }catch(e){fallback();}
+    });
+  });
+
+  // warm up so the first frame already has traffic
+  for(var s=0;s<600;s++) step(1/60);
+  restartCounts();refreshButtons();
+  var last=performance.now(),lastStats=0;
+  function frame(t){
+    var dt=Math.min(0.05,(t-last)/1000);last=t;
+    if(!paused&&!document.hidden) step(dt);
+    draw();
+    if(t-lastStats>250){updateStats();lastStats=t;}
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>
